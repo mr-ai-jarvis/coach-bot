@@ -1,16 +1,13 @@
-"""Обработчик команды /start и /new."""
+"""Обработчик команды /start, /new и /help."""
 
 from telegram import Update
 from telegram.ext import ContextTypes
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Приветственное сообщение."""
+    """Приветственное сообщение и сброс диалога."""
     user = update.effective_user
-
-    # Сбрасываем историю диалога при /start или /new
-    if "history" in context.user_data:
-        context.user_data.clear()
+    context.user_data.clear()
 
     await update.message.reply_text(
         f"👋 Привет, {user.first_name}!\n\n"

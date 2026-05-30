@@ -6,12 +6,16 @@ Coach Bot — главный entry point.
 import os
 import logging
 from dotenv import load_dotenv
+from telegram import Update
 from telegram.ext import Application, MessageHandler, CommandHandler, filters
 
 from src.handlers.start import start_command
+from src.handlers.new import new_command
+from src.handlers.help import help_command
 from src.handlers.messages import handle_message
 from src.ai.gemini_client import GeminiClient
 from src.ai.groq_client import GroqClient
+from src.web.health import start_health_server
 
 load_dotenv()
 
@@ -47,17 +51,20 @@ def main() -> None:
 
     # Telegram App
     app = Application.builder().token(bot_token).build()
-
-    # Сохраняем AI-клиенты в данных бота
     app.bot_data["ai_clients"] = ai_clients
+    app.bot_data["primary_ai"] = os.environ.get("PRIMARY_AI", "gemini")
 
     # Регистрируем хендлеры
     app.add_handler(CommandHandler("start", start_command))
-    app.add_handler(CommandHandler("new", start_command))  # /new сбрасывает диалог
+    app.add_handler(CommandHandler("new", new_command))
+    app.add_handler(CommandHandler("help", help_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
+    # Запускаем health-сервер для Railway (проверяет, что бот жив)
+    start_health_server()
+
     logger.info("🧠 Coach Bot запущен...")
-    app.run_polling(allowed_updates=["message"])
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
