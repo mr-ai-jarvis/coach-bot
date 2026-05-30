@@ -13,6 +13,7 @@ from src.handlers.start import start_command
 from src.handlers.new import new_command
 from src.handlers.help import help_command
 from src.handlers.messages import handle_message
+from src.handlers.voice import handle_voice
 from src.ai.gemini_client import GeminiClient
 from src.ai.groq_client import GroqClient
 from src.web.health import start_health_server
@@ -59,6 +60,7 @@ def main() -> None:
     app.add_handler(CommandHandler("new", new_command))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(MessageHandler(filters.VOICE, handle_voice))
 
     # Запускаем health-сервер для Railway (проверяет, что бот жив)
     start_health_server()
