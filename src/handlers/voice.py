@@ -69,7 +69,9 @@ async def handle_voice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     )
 
     # ── Отправляем транскрипт в AI для ответа ──
-    ai = ai_clients.get("gemini") or groq
+    # Приоритет: PRIMARY_AI → Groq (он же транскрибировал) → любой другой
+    primary = context.application.bot_data.get("primary_ai", "groq")
+    ai = ai_clients.get(primary) or groq or next(iter(ai_clients.values()), None)
     if not ai:
         await update.message.reply_text("❌ AI не подключён.")
         return
